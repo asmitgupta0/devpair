@@ -1,24 +1,43 @@
 import { useNavigate } from "react-router";
+import { useState } from "react";
 
 function HomePage() {
   const navigate = useNavigate();
+  const [roomId, setRoomId] = useState("");
+  console.log(roomId);
 
   function handleCreateRoom() {
-    const roomId = crypto.randomUUID();
-    console.log("room id: ", roomId);
+    const newRoomId = crypto.randomUUID();
+    navigate(`/room/${newRoomId}`);
+  }
+
+  function handleJoinRoom(e: React.SubmitEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (roomId.trim() === "") return;
     navigate(`/room/${roomId}`);
   }
   return (
-    <>
-      <div>
-        <h1>DevPair</h1>
-        <h3>HomePage</h3>
-        <p>Practice interviews together in real time.</p>
+    <div>
+      <h1>DevPair</h1>
+      <h3>HomePage</h3>
+      <p>Practice interviews together in real time.</p>
+      <section>
         <button type="button" onClick={handleCreateRoom}>
           Create Room
         </button>
-      </div>
-    </>
+        <form onSubmit={handleJoinRoom}>
+          <input
+            type="text"
+            placeholder="Enter Room ID"
+            value={roomId}
+            onChange={(e) => {
+              setRoomId(e.target.value);
+            }}
+          />
+          <button type="submit">Join Room</button>
+        </form>
+      </section>
+    </div>
   );
 }
 
