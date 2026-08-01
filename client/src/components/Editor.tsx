@@ -1,11 +1,16 @@
 import MonacoEditor from "@monaco-editor/react";
-export default function Editor() {
+type EditorProps = {
+  code: string;
+  onCodeChange: (value: string | undefined) => void;
+};
+export default function Editor({ code, onCodeChange }: EditorProps) {
   return (
     <MonacoEditor
       height="90vh"
       defaultLanguage="javascript"
-      defaultValue="// type your code here"
       theme="vs-dark"
+      value={code}
+      onChange={onCodeChange}
     />
   );
 }
