@@ -4,7 +4,6 @@ import { useState } from "react";
 function HomePage() {
   const navigate = useNavigate();
   const [roomId, setRoomId] = useState("");
-  console.log(roomId);
 
   function handleCreateRoom() {
     const newRoomId = crypto.randomUUID();
