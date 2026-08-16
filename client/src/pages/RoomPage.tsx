@@ -2,12 +2,16 @@ import { useParams } from "react-router";
 import Editor from "../components/Editor";
 import { useState } from "react";
 import { useRef } from "react";
+import { useEffect } from "react";
+import socket from "../services/socket";
+
 export default function RoomPage() {
   const { roomId } = useParams();
   const [code, setCode] = useState("// type your code here");
   function handleCodeChange(value: string | undefined) {
     setCode(value ?? "");
   }
+
   const [isCopied, setIsCopied] = useState(false);
   const timerRef = useRef<number | null>(null);
   async function copyRoomLink() {
@@ -25,6 +29,30 @@ export default function RoomPage() {
       }
     }
   }
+
+  const [connectionStatus, setConnectionStatus] = useState(
+    socket.connected ? "Connected! 🟢" : "Not Connected! 🔴",
+  );
+
+  useEffect(() => {
+    const handleConnect = () => {
+      console.log("socket connect event triggered!", socket.connected);
+      setConnectionStatus("Connected! 🟢");
+    };
+
+    const handleDisconnect = () => {
+      setConnectionStatus("Not Connected! 🔴");
+    };
+    console.log("REGISTERING SOCKET LISTENER");
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+    };
+  }, []);
+
   return (
     <>
       <h3>RoomPage</h3>
@@ -32,7 +60,8 @@ export default function RoomPage() {
       <button onClick={copyRoomLink}>
         {!isCopied ? "Copy Link" : "copied!"}
       </button>
-      <p>🔴 Connection: Not Connected</p>
+
+      <p>Connection: {connectionStatus}</p>
       <Editor code={code} onCodeChange={handleCodeChange} />
     </>
   );
