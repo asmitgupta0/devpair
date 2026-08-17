@@ -30,22 +30,32 @@ export default function RoomPage() {
     }
   }
 
+  function handleJoinRoom() {
+    console.log("Joining room: ", roomId);
+    socket.emit("room:join", roomId);
+  }
+
   const [connectionStatus, setConnectionStatus] = useState(
     socket.connected ? "Connected! 🟢" : "Not Connected! 🔴",
   );
 
   useEffect(() => {
     const handleConnect = () => {
-      console.log("socket connect event triggered!", socket.connected);
+      // console.log("socket connect event triggered!", socket.connected);
       setConnectionStatus("Connected! 🟢");
+      handleJoinRoom();
     };
 
     const handleDisconnect = () => {
       setConnectionStatus("Not Connected! 🔴");
     };
-    console.log("REGISTERING SOCKET LISTENER");
+    // console.log("REGISTERING SOCKET LISTENER");
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
+
+    if (socket.connected) {
+      handleJoinRoom();
+    }
 
     return () => {
       socket.off("connect", handleConnect);
