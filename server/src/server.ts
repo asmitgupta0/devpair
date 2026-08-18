@@ -19,6 +19,12 @@ io.on("connection", (socket) => {
     const sockets = await io.in(roomId).fetchSockets();
     console.log(sockets.length);
   });
+  socket.on("editor:change", (newCode, roomId) => {
+    // console.log("new code recievd:\n", newCode);
+    // const roomId = [...socket.rooms].find((value) => value !== socket.id);
+    console.log("new code being emitted to room: ", roomId);
+    socket.to(roomId).emit("editor:change", newCode);
+  });
 });
 
 const PORT = process.env.PORT || 5000;

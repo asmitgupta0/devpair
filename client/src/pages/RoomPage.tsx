@@ -9,7 +9,10 @@ export default function RoomPage() {
   const { roomId } = useParams();
   const [code, setCode] = useState("// type your code here");
   function handleCodeChange(value: string | undefined) {
-    setCode(value ?? "");
+    const newCode = value ?? "";
+    setCode(newCode);
+    console.log("ready to emit changed code:", newCode);
+    socket.emit("editor:change", newCode, roomId);
   }
 
   const [isCopied, setIsCopied] = useState(false);
@@ -49,9 +52,17 @@ export default function RoomPage() {
     const handleDisconnect = () => {
       setConnectionStatus("Not Connected! 🔴");
     };
+
     // console.log("REGISTERING SOCKET LISTENER");
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
+
+    const handleEditorChange = (recievedCode: string) => {
+      console.log("recieved code from server:\n", recievedCode);
+      setCode(recievedCode);
+    };
+
+    socket.on("editor:change", handleEditorChange);
 
     if (socket.connected) {
       handleJoinRoom();
@@ -60,6 +71,7 @@ export default function RoomPage() {
     return () => {
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
+      socket.off("editor:change", handleEditorChange);
     };
   }, []);
 
