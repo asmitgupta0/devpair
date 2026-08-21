@@ -8,10 +8,12 @@ import socket from "../services/socket";
 export default function RoomPage() {
   const { roomId } = useParams();
   const [code, setCode] = useState("// type your code here");
+
   function handleCodeChange(value: string | undefined) {
+    console.log("local update detected!");
+
     const newCode = value ?? "";
     setCode(newCode);
-    console.log("ready to emit changed code:", newCode);
     socket.emit("editor:change", newCode, roomId);
   }
 
@@ -41,10 +43,8 @@ export default function RoomPage() {
   const [connectionStatus, setConnectionStatus] = useState(
     socket.connected ? "Connected! 🟢" : "Not Connected! 🔴",
   );
-
   useEffect(() => {
     const handleConnect = () => {
-      // console.log("socket connect event triggered!", socket.connected);
       setConnectionStatus("Connected! 🟢");
       handleJoinRoom();
     };
@@ -58,7 +58,7 @@ export default function RoomPage() {
     socket.on("disconnect", handleDisconnect);
 
     const handleEditorChange = (recievedCode: string) => {
-      console.log("recieved code from server:\n", recievedCode);
+      console.log("remote update detected!");
       setCode(recievedCode);
     };
 
