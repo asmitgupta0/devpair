@@ -10,8 +10,6 @@ export default function RoomPage() {
   const [code, setCode] = useState("// type your code here");
 
   function handleCodeChange(value: string | undefined) {
-    console.log("local update detected!");
-
     const newCode = value ?? "";
     setCode(newCode);
     socket.emit("editor:change", newCode, roomId);
@@ -36,7 +34,6 @@ export default function RoomPage() {
   }
 
   function handleJoinRoom() {
-    console.log("Joining room: ", roomId);
     socket.emit("room:join", roomId);
   }
 
@@ -53,12 +50,10 @@ export default function RoomPage() {
       setConnectionStatus("Not Connected! 🔴");
     };
 
-    // console.log("REGISTERING SOCKET LISTENER");
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
 
     const handleEditorChange = (recievedCode: string) => {
-      console.log("remote update detected!");
       setCode(recievedCode);
     };
 

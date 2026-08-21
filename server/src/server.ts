@@ -11,13 +11,8 @@ const io = new Server(server, {
 });
 const roomCodes = new Map<string, string>();
 io.on("connection", (socket) => {
-  console.log(`New client connected: ${socket.id}`);
-
   socket.on("room:join", async (roomId) => {
-    console.log("Client wants to join:", roomId);
     socket.join(roomId);
-    const sockets = await io.in(roomId).fetchSockets();
-    console.log(sockets.length);
 
     let currentCode = "// type your code here";
     if (!roomCodes.has(roomId)) {
@@ -27,10 +22,8 @@ io.on("connection", (socket) => {
     }
 
     socket.emit("editor:change", currentCode);
-    console.log("current room code emitted to new client in room.");
   });
   socket.on("editor:change", (newCode, roomId) => {
-    console.log("new code being emitted by socket: ", socket.id);
     roomCodes.set(roomId, newCode);
     socket.to(roomId).emit("editor:change", newCode);
   });
