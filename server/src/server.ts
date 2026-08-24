@@ -1,6 +1,21 @@
 import app from "./app";
 import http from "node:http";
 import { Server } from "socket.io";
+import "dotenv/config";
+import mongoose from "mongoose";
+
+const mongoUri = process.env.MONGODB_URI;
+if (mongoUri === undefined) {
+  throw new Error("MONGODB_URI is not defined.");
+}
+mongoose
+  .connect(mongoUri)
+  .then(() => {
+    console.log("MongoDB Atlas connected successfully!");
+  })
+  .catch((err) => {
+    console.log("mongo error: ", err);
+  });
 
 const server = http.createServer(app);
 const io = new Server(server, {
