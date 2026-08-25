@@ -3,6 +3,7 @@ import http from "node:http";
 import { Server } from "socket.io";
 import "dotenv/config";
 import mongoose from "mongoose";
+import Room from "./models/Room.js";
 
 const mongoUri = process.env.MONGODB_URI;
 if (mongoUri === undefined) {
@@ -16,6 +17,19 @@ mongoose
   .catch((err) => {
     console.log("mongo error: ", err);
   });
+
+// const testRoom = new Room({
+//   roomId: "xyz_test",
+//   code: "// type your code here",
+//   language: "javascript",
+// });
+// testRoom.save();
+// const res = await Room.findOneAndUpdate(
+//   { roomId: "xyz_test" },
+//   { code: "new code updates successfully!" },
+// );
+const res = await Room.findOneAndDelete({ roomId: "xyz_test" });
+console.log(res);
 
 const server = http.createServer(app);
 const io = new Server(server, {
