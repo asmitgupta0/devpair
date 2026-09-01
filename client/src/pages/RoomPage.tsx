@@ -3,9 +3,11 @@ import Editor from "../components/Editor";
 import { useState } from "react";
 import { useRef } from "react";
 import { useEffect } from "react";
+import { useLocation } from "react-router";
 import socket from "../services/socket";
 
 export default function RoomPage() {
+  const location = useLocation();
   const { roomId } = useParams();
   const [code, setCode] = useState("// type your code here");
 
@@ -33,20 +35,39 @@ export default function RoomPage() {
     }
   }
 
-  function handleJoinRoom() {
+  async function handleJoinRoom() {
+    let room = location.state;
+    if (!room) {
+      const res = await fetch(`http://localhost:5000/rooms/${roomId}`, {
+        method: "GET",
+      });
+      if (!res.ok) {
+        return;
+      }
+      room = await res.json();
+    }
+    setCode(room.code);
     socket.emit("room:join", roomId);
   }
 
   const [connectionStatus, setConnectionStatus] = useState(
     socket.connected ? "Connected! 🟢" : "Not Connected! 🔴",
   );
+
   useEffect(() => {
+    if (socket.connected) {
+      console.log("socket connected already!");
+      handleJoinRoom();
+    }
+
     const handleConnect = () => {
+      console.log("socket connected now!");
       setConnectionStatus("Connected! 🟢");
       handleJoinRoom();
     };
 
     const handleDisconnect = () => {
+      console.log("socket disconnected");
       setConnectionStatus("Not Connected! 🔴");
     };
 
@@ -58,10 +79,6 @@ export default function RoomPage() {
     };
 
     socket.on("editor:change", handleEditorChange);
-
-    if (socket.connected) {
-      handleJoinRoom();
-    }
 
     return () => {
       socket.off("connect", handleConnect);

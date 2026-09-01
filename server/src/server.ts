@@ -15,21 +15,8 @@ mongoose
     console.log("MongoDB Atlas connected successfully!");
   })
   .catch((err) => {
-    console.log("mongo error: ", err);
+    console.error("mongo error: ", err);
   });
-
-// const testRoom = new Room({
-//   roomId: "xyz_test",
-//   code: "// type your code here",
-//   language: "javascript",
-// });
-// testRoom.save();
-// const res = await Room.findOneAndUpdate(
-//   { roomId: "xyz_test" },
-//   { code: "new code updates successfully!" },
-// );
-const res = await Room.findOneAndDelete({ roomId: "xyz_test" });
-console.log(res);
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -38,23 +25,26 @@ const io = new Server(server, {
     credentials: true,
   },
 });
-const roomCodes = new Map<string, string>();
+
 io.on("connection", (socket) => {
   socket.on("room:join", async (roomId) => {
     socket.join(roomId);
-
-    let currentCode = "// type your code here";
-    if (!roomCodes.has(roomId)) {
-      roomCodes.set(roomId, currentCode);
-    } else {
-      currentCode = roomCodes.get(roomId) ?? "";
-    }
-
-    socket.emit("editor:change", currentCode);
   });
-  socket.on("editor:change", (newCode, roomId) => {
-    roomCodes.set(roomId, newCode);
-    socket.to(roomId).emit("editor:change", newCode);
+
+  socket.on("editor:change", async (newCode, roomId) => {
+    try {
+      const updated = await Room.findOneAndUpdate(
+        { roomId },
+        { code: newCode },
+      );
+      if (!updated) {
+        console.warn(`editor:change for unknown room ${roomId}`);
+        return;
+      }
+      socket.to(roomId).emit("editor:change", newCode);
+    } catch (err) {
+      console.error("Failed to persist code change:", err);
+    }
   });
 });
 

@@ -5,15 +5,24 @@ function HomePage() {
   const navigate = useNavigate();
   const [roomId, setRoomId] = useState("");
 
-  function handleCreateRoom() {
-    const newRoomId = crypto.randomUUID();
+  async function handleCreateRoom() {
+    const res = await fetch("http://localhost:5000/rooms", { method: "POST" });
+
+    const newRoomId = (await res.json()).roomId;
     navigate(`/room/${newRoomId}`);
   }
 
-  function handleJoinRoom(e: React.SubmitEvent<HTMLFormElement>) {
+  async function handleJoinRoom(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     if (roomId.trim() === "") return;
-    navigate(`/room/${roomId}`);
+    const res = await fetch(`http://localhost:5000/rooms/${roomId}`, {
+      method: "GET",
+    });
+    if (!res.ok) {
+      return;
+    }
+    const room = await res.json();
+    navigate(`/room/${roomId}`, { state: room });
   }
   return (
     <div>
