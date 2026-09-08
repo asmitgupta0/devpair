@@ -3,12 +3,65 @@ import Room from "../models/Room.js";
 
 const router = express.Router();
 
+const starterTemplates = new Map<string, string>([
+  [
+    "javascript",
+    `function solve() {
+  // Write your solution here
+}
+
+solve();
+`,
+  ],
+  [
+    "python",
+    `def solve():
+    # Write your solution here
+    pass
+
+if __name__ == "__main__":
+    solve()
+`,
+  ],
+  [
+    "cpp",
+    `#include <bits/stdc++.h>
+using namespace std;
+
+void solve() {
+    // Write your solution here
+}
+
+int main() {
+    solve();
+    return 0;
+}
+`,
+  ],
+  [
+    "java",
+    `import java.io.*;
+import java.util.*;
+
+public class Main {
+    static void solve() {
+        // Write your solution here
+    }
+
+    public static void main(String[] args) {
+        solve();
+    }
+}
+`,
+  ],
+]);
+
 router.post("/", async (req, res) => {
   console.log("recieved lang: ", req.body.language);
   const roomId = crypto.randomUUID();
   const newRoom = await new Room({
     roomId,
-    code: "// type your code here",
+    code: starterTemplates.get(req.body.language) ?? "//type your code here",
     language: req.body.language,
   }).save();
   console.log("New room doc created: ", newRoom);
