@@ -5,8 +5,20 @@ function HomePage() {
   const navigate = useNavigate();
   const [roomId, setRoomId] = useState("");
 
-  async function handleCreateRoom() {
-    const res = await fetch("http://localhost:5000/rooms", { method: "POST" });
+  async function handleCreateRoom(e: React.SubmitEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const formJson = Object.fromEntries(formData.entries());
+    console.log("selected lang: ", JSON.stringify(formJson.selectedLanguage));
+    const res = await fetch("http://localhost:5000/rooms", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        language: formJson.selectedLanguage,
+      }),
+    });
 
     const newRoomId = (await res.json()).roomId;
     navigate(`/room/${newRoomId}`);
@@ -30,9 +42,19 @@ function HomePage() {
       <h3>HomePage</h3>
       <p>Practice interviews together in real time.</p>
       <section>
-        <button type="button" onClick={handleCreateRoom}>
-          Create Room
-        </button>
+        <form onSubmit={handleCreateRoom}>
+          <label>
+            Select room language:
+            <select name="selectedLanguage">
+              <option value="javascript">JavaScript</option>
+              <option value="python">Python</option>
+              <option value="cpp">C++</option>
+              <option value="java">Java</option>
+            </select>
+          </label>
+          <button type="submit">Create Room</button>
+        </form>
+
         <form onSubmit={handleJoinRoom}>
           <input
             type="text"

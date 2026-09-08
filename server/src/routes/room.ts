@@ -4,11 +4,12 @@ import Room from "../models/Room.js";
 const router = express.Router();
 
 router.post("/", async (req, res) => {
+  console.log("recieved lang: ", req.body.language);
   const roomId = crypto.randomUUID();
   const newRoom = await new Room({
     roomId,
     code: "// type your code here",
-    language: "javascript",
+    language: req.body.language,
   }).save();
   console.log("New room doc created: ", newRoom);
   res.status(201).json({ roomId });

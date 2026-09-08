@@ -10,6 +10,7 @@ export default function RoomPage() {
   const location = useLocation();
   const { roomId } = useParams();
   const [code, setCode] = useState("// type your code here");
+  const [lang, setLang] = useState<string | null>(null);
 
   function handleCodeChange(value: string | undefined) {
     const newCode = value ?? "";
@@ -37,6 +38,7 @@ export default function RoomPage() {
 
   async function handleJoinRoom() {
     let room = location.state;
+
     if (!room) {
       const res = await fetch(`http://localhost:5000/rooms/${roomId}`, {
         method: "GET",
@@ -46,6 +48,8 @@ export default function RoomPage() {
       }
       room = await res.json();
     }
+
+    setLang(room.language);
     setCode(room.code);
     socket.emit("room:join", roomId);
   }
@@ -57,6 +61,7 @@ export default function RoomPage() {
   useEffect(() => {
     if (socket.connected) {
       console.log("socket connected already!");
+      setConnectionStatus("Connected! 🟢");
       handleJoinRoom();
     }
 
@@ -86,6 +91,7 @@ export default function RoomPage() {
       socket.off("editor:change", handleEditorChange);
     };
   }, []);
+  // if (!lang) return <p>Loading room...</p>;
 
   return (
     <>
@@ -94,9 +100,13 @@ export default function RoomPage() {
       <button onClick={copyRoomLink}>
         {!isCopied ? "Copy Link" : "copied!"}
       </button>
-
       <p>Connection: {connectionStatus}</p>
-      <Editor code={code} onCodeChange={handleCodeChange} />
+      <p>Language: {lang ?? "Loading..."}</p>
+      <Editor
+        code={code}
+        onCodeChange={handleCodeChange}
+        language={lang ?? "java"}
+      />
     </>
   );
 }
