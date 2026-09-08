@@ -5,6 +5,8 @@ import "dotenv/config";
 import mongoose from "mongoose";
 import Room from "./models/Room.js";
 
+const debounceTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
 const mongoUri = process.env.MONGODB_URI;
 if (mongoUri === undefined) {
   throw new Error("MONGODB_URI is not defined.");
@@ -31,20 +33,32 @@ io.on("connection", (socket) => {
     socket.join(roomId);
   });
 
-  socket.on("editor:change", async (newCode, roomId) => {
-    try {
-      const updated = await Room.findOneAndUpdate(
-        { roomId },
-        { code: newCode },
-      );
-      if (!updated) {
-        console.warn(`editor:change for unknown room ${roomId}`);
-        return;
-      }
-      socket.to(roomId).emit("editor:change", newCode);
-    } catch (err) {
-      console.error("Failed to persist code change:", err);
+  socket.on("editor:change", (newCode, roomId) => {
+    socket.to(roomId).emit("editor:change", newCode);
+
+    if (debounceTimers.has(roomId)) {
+      const timerId = debounceTimers.get(roomId);
+      clearTimeout(timerId);
     }
+    const timerId = setTimeout(async () => {
+      try {
+        console.log("mongodb write!");
+        const updated = await Room.findOneAndUpdate(
+          { roomId },
+          { code: newCode },
+        );
+        if (!updated) {
+          console.warn(`editor:change for unknown room ${roomId}`);
+          return;
+        }
+      } catch (err) {
+        console.error("Failed to persist code change:", err);
+      } finally {
+        debounceTimers.delete(roomId);
+      }
+    }, 500);
+
+    debounceTimers.set(roomId, timerId);
   });
 });
 
