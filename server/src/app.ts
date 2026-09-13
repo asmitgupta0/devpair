@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import roomRouter from "./routes/room.js";
+import authRouter from "./routes/auth.js";
 
 const app = express();
 
@@ -21,9 +22,6 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.use("/rooms", roomRouter);
-
-// app.post("/rooms", () => {
-//   console.log("Create room request received");
-// });
+app.use("/auth", authRouter);
 
 export default app;
