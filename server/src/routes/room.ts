@@ -1,5 +1,6 @@
 import express from "express";
 import Room from "../models/Room.js";
+import optionalAuthMiddleware from "../middlewares/optionalAuth.js";
 
 const router = express.Router();
 
@@ -56,11 +57,13 @@ public class Main {
   ],
 ]);
 
-router.post("/", async (req, res) => {
+router.post("/", optionalAuthMiddleware, async (req, res) => {
   console.log("recieved lang: ", req.body.language);
   const roomId = crypto.randomUUID();
+  const ownerId = req.user?.userId;
   const newRoom = await new Room({
     roomId,
+    ...(ownerId && { ownerId }),
     code: starterTemplates.get(req.body.language) ?? "//type your code here",
     language: req.body.language,
   }).save();

@@ -16,6 +16,7 @@ function HomePage({ handleLogout }: HomePageProps) {
     console.log("selected lang: ", JSON.stringify(formJson.selectedLanguage));
     const res = await fetch("http://localhost:5000/rooms", {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
