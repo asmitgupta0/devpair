@@ -54,25 +54,34 @@ router.post("/login", async (req, res) => {
 
   const user = await User.findOne({ email: req.body.email });
   if (!user)
-    return res.status(401).json({ err: "Invalid username or password" });
+    return res
+      .status(401)
+      .json({ authenticated: false, err: "Invalid username or password" });
+
+  console.log("matched user: ", user.username);
 
   const enteredPwd = req.body.password;
   const pwdHash = user.passwordHash;
 
   if (!(await bcrypt.compare(enteredPwd, pwdHash)))
-    return res.status(401).json({ err: "Invalid username or password" });
+    return res
+      .status(401)
+      .json({ authenticated: false, err: "Invalid username or password" });
 
   const token = jwt.sign({ userId: user._id.toString() }, secret, {
     expiresIn: "36h",
   });
+  console.log("gen token: ", token);
 
   res.cookie("authToken", token, {
     httpOnly: true,
   });
 
   return res.status(200).json({
-    success: "logged in successfully!",
+    authenticated: true,
+    message: "logged in successfully!",
     username: user.username,
+    email: user.email,
   });
 });
 

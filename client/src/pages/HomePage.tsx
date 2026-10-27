@@ -1,7 +1,11 @@
 import { useNavigate } from "react-router";
 import { useState } from "react";
 
-function HomePage() {
+type HomePageProps = {
+  handleLogout: () => Promise<void>;
+};
+
+function HomePage({ handleLogout }: HomePageProps) {
   const navigate = useNavigate();
   const [roomId, setRoomId] = useState("");
 
@@ -67,6 +71,7 @@ function HomePage() {
           <button type="submit">Join Room</button>
         </form>
       </section>
+      <button onClick={handleLogout}>Logout</button>
     </div>
   );
 }

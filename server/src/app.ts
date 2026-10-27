@@ -26,8 +26,16 @@ app.get("/api/health", (_req, res) => {
 });
 app.get("/auth/me", authMiddleware, async (req, res) => {
   const user = await User.findById(req.user.userId);
-  if (!user) return res.status(401).json({ err: "Unauthorized Access" });
-  return res.status(200).json({ username: user.username, email: user.email });
+  if (!user)
+    return res.status(401).json({
+      authenticated: false,
+      err: "Unauthorized Access",
+    });
+  return res.status(200).json({
+    authenticated: true,
+    username: user.username,
+    email: user.email,
+  });
 });
 app.post("/auth/logout", (req, res) => {
   res.clearCookie("authToken");
