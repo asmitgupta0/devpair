@@ -1,11 +1,14 @@
 import { useNavigate } from "react-router";
 import { useState } from "react";
+import { useEffect } from "react";
+import { Link } from "react-router";
 
 type HomePageProps = {
   handleLogout: () => Promise<void>;
+  authenticated: boolean;
 };
 
-function HomePage({ handleLogout }: HomePageProps) {
+function HomePage({ handleLogout, authenticated }: HomePageProps) {
   const navigate = useNavigate();
   const [roomId, setRoomId] = useState("");
 
@@ -41,6 +44,33 @@ function HomePage({ handleLogout }: HomePageProps) {
     const room = await res.json();
     navigate(`/room/${roomId}`, { state: room });
   }
+
+  type RoomSummary = {
+    roomId: string;
+    language: string;
+  };
+
+  const [myRooms, setMyRooms] = useState<RoomSummary[]>([]);
+  async function getMyRooms() {
+    const response = await fetch("http://localhost:5000/rooms/mine", {
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      console.log("Could not fetch rooms:", response.status);
+      return;
+    }
+
+    const data = await response.json();
+    setMyRooms(data.rooms);
+  }
+
+  useEffect(() => {
+    if (authenticated) {
+      getMyRooms();
+    }
+  }, [authenticated]);
+
   return (
     <div>
       <h1>DevPair</h1>
@@ -73,6 +103,23 @@ function HomePage({ handleLogout }: HomePageProps) {
         </form>
       </section>
       <button onClick={handleLogout}>Logout</button>
+
+      {authenticated && (
+        <section>
+          <h3>My Rooms</h3>
+
+          {myRooms.length === 0 ? (
+            <p>You haven't created any rooms yet.</p>
+          ) : (
+            myRooms.map((room) => (
+              <div key={room.roomId}>
+                <Link to={`/room/${room.roomId}`}>{room.roomId}</Link>
+                <p>{room.language}</p>
+              </div>
+            ))
+          )}
+        </section>
+      )}
     </div>
   );
 }

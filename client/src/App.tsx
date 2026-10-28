@@ -51,7 +51,12 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<HomePage handleLogout={handleLogout} />} />
+      <Route
+        path="/"
+        element={
+          <HomePage handleLogout={handleLogout} authenticated={authenticated} />
+        }
+      />
       <Route path="room/:roomId" element={<RoomPage />} />
       <Route path="*" element={<NotFoundPage />} />
       <Route

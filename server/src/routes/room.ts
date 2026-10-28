@@ -1,6 +1,7 @@
 import express from "express";
 import Room from "../models/Room.js";
 import optionalAuthMiddleware from "../middlewares/optionalAuth.js";
+import authMiddleware from "../middlewares/auth.js";
 
 const router = express.Router();
 
@@ -69,6 +70,17 @@ router.post("/", optionalAuthMiddleware, async (req, res) => {
   }).save();
   console.log("New room doc created: ", newRoom);
   res.status(201).json({ roomId });
+});
+
+router.get("/mine", authMiddleware, async (req, res) => {
+  const ownerId = req.user?.userId;
+  if (!ownerId) return res.status(401).json({ message: "Unauthorized" });
+  try {
+    const rooms = await Room.find({ ownerId });
+    res.status(200).json({ rooms });
+  } catch (err) {
+    res.status(500).json("Internal Server Error", err);
+  }
 });
 
 router.get("/:roomId", async (req, res) => {
