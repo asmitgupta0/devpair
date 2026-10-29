@@ -30,10 +30,18 @@ const io = new Server(server, {
 
 io.on("connection", (socket) => {
   socket.on("room:join", async (roomId) => {
-    socket.join(roomId);
+    try {
+      const room = await Room.findOne({ roomId });
+      if (!room) return;
+      socket.join(roomId);
+    } catch (err) {
+      console.error("Failed to join room:", err);
+    }
   });
 
   socket.on("editor:change", (newCode, roomId) => {
+    if (!socket.rooms.has(roomId)) return;
+
     socket.to(roomId).emit("editor:change", newCode);
 
     if (debounceTimers.has(roomId)) {
