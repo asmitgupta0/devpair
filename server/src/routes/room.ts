@@ -1,5 +1,7 @@
 import express from "express";
 import Room from "../models/Room.js";
+import optionalAuthMiddleware from "../middlewares/optionalAuth.js";
+import authMiddleware from "../middlewares/auth.js";
 
 const router = express.Router();
 
@@ -56,16 +58,30 @@ public class Main {
   ],
 ]);
 
-router.post("/", async (req, res) => {
+router.post("/", optionalAuthMiddleware, async (req, res) => {
   console.log("recieved lang: ", req.body.language);
   const roomId = crypto.randomUUID();
+  const ownerId = req.user?.userId;
   const newRoom = await new Room({
     roomId,
+    ...(ownerId && { ownerId }),
     code: starterTemplates.get(req.body.language) ?? "//type your code here",
     language: req.body.language,
   }).save();
   console.log("New room doc created: ", newRoom);
   res.status(201).json({ roomId });
+});
+
+router.get("/mine", authMiddleware, async (req, res) => {
+  const ownerId = req.user?.userId;
+  if (!ownerId) return res.status(401).json({ message: "Unauthorized" });
+  try {
+    const rooms = await Room.find({ ownerId });
+    res.status(200).json({ rooms });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
 });
 
 router.get("/:roomId", async (req, res) => {
