@@ -1,4 +1,4 @@
-import app from "./app";
+import app from "./app.js";
 import http from "node:http";
 import { Server } from "socket.io";
 import "dotenv/config";

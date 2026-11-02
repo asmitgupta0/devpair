@@ -79,7 +79,8 @@ router.get("/mine", authMiddleware, async (req, res) => {
     const rooms = await Room.find({ ownerId });
     res.status(200).json({ rooms });
   } catch (err) {
-    res.status(500).json("Internal Server Error", err);
+    console.error(err);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 });
 

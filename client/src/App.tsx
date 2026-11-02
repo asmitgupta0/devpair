@@ -65,12 +65,7 @@ function App() {
           <LoginPage setUser={setUser} setAuthenticated={setAuthenticated} />
         }
       ></Route>
-      <Route
-        path="/register"
-        element={
-          <RegisterPage setUser={setUser} setAuthenticated={setAuthenticated} />
-        }
-      ></Route>
+      <Route path="/register" element={<RegisterPage />}></Route>
     </Routes>
   );
 }

@@ -4,6 +4,12 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 
+type RegisterBody = {
+  username: string;
+  email: string;
+  password: string;
+};
+
 const router = express.Router();
 const secret = process.env.JWT_SECRET;
 
@@ -11,11 +17,12 @@ if (secret === undefined) {
   throw new Error("JWT_SECRET is not defined");
 }
 
-function hasRequiredFields(body) {
+function hasRequiredFields(body: RegisterBody): boolean {
   if (!body.username || !body.email || !body.password) return false;
   return true;
 }
-async function isUnique(body) {
+
+async function isUnique(body: RegisterBody): Promise<boolean> {
   const user = await User.findOne({
     $or: [{ username: body.username }, { email: body.email }],
   });
@@ -23,7 +30,7 @@ async function isUnique(body) {
   return false;
 }
 
-async function saveUser(body, hashedPwd) {
+async function saveUser(body: RegisterBody, hashedPwd: string) {
   return User.create({
     username: body.username,
     email: body.email,
@@ -32,7 +39,6 @@ async function saveUser(body, hashedPwd) {
 }
 
 router.post("/register", async (req, res) => {
-  console.log("received user: ", req.body);
   if (!hasRequiredFields(req.body))
     return res.status(400).json({ error: "required fields cannot be empty!" });
   if (!(await isUnique(req.body)))
@@ -50,15 +56,11 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
-  console.log("received user: ", req.body);
-
   const user = await User.findOne({ email: req.body.email });
   if (!user)
     return res
       .status(401)
       .json({ authenticated: false, err: "Invalid username or password" });
-
-  console.log("matched user: ", user.username);
 
   const enteredPwd = req.body.password;
   const pwdHash = user.passwordHash;
@@ -71,7 +73,6 @@ router.post("/login", async (req, res) => {
   const token = jwt.sign({ userId: user._id.toString() }, secret, {
     expiresIn: "36h",
   });
-  console.log("gen token: ", token);
 
   res.cookie("authToken", token, {
     httpOnly: true,

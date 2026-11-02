@@ -2,17 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Link } from "react-router";
 
-type RegisterPageProps = {
-  setUser: React.Dispatch<
-    React.SetStateAction<{ username: string; email: string } | null>
-  >;
-  setAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
-};
-
-export default function RegisterPage({
-  setUser,
-  setAuthenticated,
-}: RegisterPageProps) {
+export default function RegisterPage() {
   const navigate = useNavigate();
 
   const [username, setUsername] = useState("");

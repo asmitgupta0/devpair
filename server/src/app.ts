@@ -25,6 +25,10 @@ app.get("/api/health", (_req, res) => {
   });
 });
 app.get("/auth/me", authMiddleware, async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ err: "Unauthorized Access" });
+  }
+
   const user = await User.findById(req.user.userId);
   if (!user)
     return res.status(401).json({
